@@ -12,70 +12,22 @@ public class Calculator {
     public long calculate(String input) {
         verifyInput(input);
         calculationOrder.init(input.split(Separator));
-        return calculate();
+        return calculate().getValue();
     }
 
-    private long calculate() {
-        while (!calculationOrder.isComplete()) {
-            long x = stringToNumber(calculationOrder.next());
-            Operator operator = Operator.findOperatorByValue(calculationOrder.next());
-            long y = stringToNumber(calculationOrder.next());
-            calculationOrder.addCalculateResult(operator.calculate(x, y));
+    private Number calculate() {
+        while (calculationOrder.isCalculate()) {
+            Number number = calculationOrder.nextNumber();
+            Number number2 = calculationOrder.nextNumber();
+            Operator operator = calculationOrder.nextOperator();
+            calculationOrder.addCalculateResult(operator.calculate(number, number2));
         }
-        return calculationOrder.getCalculateTotalResult();
-    }
-
-    private long stringToNumber(String value) {
-        try {
-            return Long.parseLong(value);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException();
-        }
+        return calculationOrder.getCurrentNumber();
     }
 
     private void verifyInput(String input) {
         if (StringUtils.isBlank(input)) {
             throw new IllegalArgumentException();
         }
-    }
-
-    public enum Operator {
-        ADD("+") {
-            long calculate(long x, long y) {
-                return x + y;
-            }
-        },
-        MINUS("-") {
-            long calculate(long x, long y) {
-                return x - y;
-            }
-        },
-        MULTIPLE("*") {
-            long calculate(long x, long y) {
-                return x * y;
-            }
-        },
-        DIVIDE("/") {
-            long calculate(long x, long y) {
-                return x / y;
-            }
-        };
-
-        String value;
-
-        Operator(String value) {
-            this.value = value;
-        }
-
-        static Operator findOperatorByValue(String operatorValue) {
-            for (Operator operator : values()) {
-                if (operator.value.equals(operatorValue)) {
-                    return operator;
-                }
-            }
-            throw new IllegalArgumentException();
-        }
-
-        abstract long calculate(long x, long y);
     }
 }

@@ -1,38 +1,74 @@
 package calculator;
 
-import java.util.Collections;
-import java.util.EmptyStackException;
+
 import java.util.Stack;
 
 public class CalculationOrder {
 
-    private Stack<String> order = new Stack<>();
+    private static final int BaseInputSize = 3;
+    private static final int AdditionalInputSize = 2;
+    private static final int NumberLastIndex = 1;
+    private static final int OperationLastIndex = 2;
+    private static final int IndexInterval = 2;
+
+    private Stack<Number> numberStack = new Stack<>();
+    private Stack<Operator> operatorStack = new Stack<>();
 
     public void init(String[] inputs) {
-        for(int i = inputs.length -1 ; i>=0; i--){
-            order.push(inputs[i]);
-        }
+        addStackReverse(inputs);
     }
 
-    public String next() {
-        String next = "";
+    private void addStackReverse(String[] inputs) {
+        verifyInputs(inputs);
+        addOperationStack(inputs);
         try {
-            next = order.pop();
-        } catch (EmptyStackException e) {
-            return null;
+            addNumberStack(inputs);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException();
         }
-        return next;
     }
 
-    public boolean isComplete() {
-        return order.size() == 1;
+    private void addOperationStack(String[] inputs) {
+        for (int i = inputs.length - OperationLastIndex; i >= 0; i = i - IndexInterval) {
+            operatorStack.push(Operator.findOperatorByValue(inputs[i]));
+        }
     }
 
-    public void addCalculateResult(long result) {
-        order.push(String.valueOf(result));
+    private void addNumberStack(String[] inputs) {
+        for (int i = inputs.length - NumberLastIndex; i >= 0; i = i - IndexInterval) {
+            numberStack.push(Number.toNumber(inputs[i]));
+        }
     }
 
-    public long getCalculateTotalResult() {
-        return Long.parseLong(order.pop());
+    private void verifyInputs(String[] inputs) {
+        if ((inputs.length - BaseInputSize) % AdditionalInputSize != 0) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    public Number nextNumber() {
+        if (!numberStack.isEmpty()) {
+            return numberStack.pop();
+        }
+        return null;
+    }
+
+    public Operator nextOperator() {
+        if (!operatorStack.isEmpty()) {
+            return operatorStack.pop();
+        }
+        return null;
+    }
+
+    public boolean isCalculate() {
+        return operatorStack.size() > 0 && numberStack.size() > 1;
+    }
+
+    public void addCalculateResult(Number result) {
+        numberStack.push(result);
+    }
+
+    public Number getCurrentNumber() {
+        return numberStack.pop();
     }
 }
